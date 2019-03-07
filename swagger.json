@@ -120,7 +120,24 @@
           "200" : {
             "description" : "OK",
             "schema" : {
-              "$ref" : "#/definitions/Light"
+              "type" : "object",
+              "properties" : {
+                "count" : {
+                  "type" : "integer"
+                },
+                "next" : {
+                  "type" : "string"
+                },
+                "previous" : {
+                  "type" : "string"
+                },
+                "results" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/Light"
+                  }
+                }
+              }
             }
           },
           "401" : {
@@ -219,7 +236,7 @@
     },
     "/lights/{lightId}/commands/" : {
       "post" : {
-        "tags" : [ "控制命令" ],
+        "tags" : [ "蓝牙灯" ],
         "summary" : "下发的控制命令",
         "responses" : {
           "201" : {
@@ -275,6 +292,7 @@
     },
     "/lights/{lightId}/commands/{commandId}/" : {
       "delete" : {
+        "tags" : [ "蓝牙灯" ],
         "summary" : "撤销未执行的命令",
         "description" : "撤销尚未执行的命令",
         "responses" : {
