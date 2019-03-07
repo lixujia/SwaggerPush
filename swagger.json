@@ -1,1 +1,288 @@
-{}
+{
+  "swagger" : "2.0",
+  "info" : {
+    "version" : "v1",
+    "title" : "蓝牙灯Restful API文档",
+    "description" : "蓝牙灯控制和展示API文档\n\nPOST /auth/jwt-token-obtain/ 可获取用户认证的JWT Token\nGET /lights/ 可以获取所有蓝牙灯的设备信息\nGET /lights/{lightId}/ 可以获取设备编号等于 lightId 的设备的信息\nPOST /lights/{lightId}/commands/ 为向设备编号为 lightId 的设备发送控制命令\n\n请求接口的参数，请注意它们有“header”、“path”、“query”和“body”等区分\n  - header 参数应放置在HTTP请求头中\n  - path 参数放在URL路径中\n  - query 参数放在URL查询参数中（?后面）\n  - body 为提交数据的数据体\n  \n业务第一步，应先从 /auth/jwt-token-obtain/ 接口获取用户的JWT Token。后续的每个请求\n都需要将 Authorization: JWT {jwtToken} 放置在HTTP头部。\n"
+  },
+  "host" : "api.renjinggai.com",
+  "basePath" : "/BlueToothLight/v1",
+  "schemes" : [ "https", "http" ],
+  "paths" : {
+    "/auth/jwt-token-obtain/" : {
+      "post" : {
+        "tags" : [ "用户认证" ],
+        "summary" : "获取授权token",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "object",
+              "properties" : {
+                "token" : {
+                  "type" : "string",
+                  "description" : "用户认证的JWT Token"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request",
+            "schema" : {
+              "type" : "object",
+              "properties" : {
+                "non_field_errors" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string",
+                    "enum" : [ "无法使用提供的认证信息登录。" ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "body",
+          "in" : "body",
+          "required" : true,
+          "schema" : {
+            "type" : "object",
+            "required" : [ "username", "password" ],
+            "properties" : {
+              "username" : {
+                "type" : "string",
+                "description" : "用户名"
+              },
+              "password" : {
+                "type" : "string",
+                "description" : "密码"
+              }
+            }
+          }
+        } ]
+      }
+    },
+    "/lights/" : {
+      "get" : {
+        "tags" : [ "蓝牙灯" ],
+        "summary" : "获取列表",
+        "responses" : {
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "Authorization",
+          "in" : "header",
+          "required" : true,
+          "type" : "string"
+        } ]
+      },
+      "post" : {
+        "tags" : [ "蓝牙灯" ],
+        "summary" : "创建设备对象",
+        "responses" : {
+          "201" : {
+            "description" : "Created"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "Authorization",
+          "in" : "header",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "body",
+          "in" : "body",
+          "description" : "蓝牙灯必要信息",
+          "required" : true,
+          "schema" : {
+            "type" : "object",
+            "required" : [ "serial_no", "imei" ],
+            "properties" : {
+              "serial_no" : {
+                "type" : "string",
+                "description" : "设备的唯一编号"
+              },
+              "imei" : {
+                "type" : "string",
+                "description" : "设备NB模组号"
+              }
+            }
+          }
+        } ]
+      }
+    },
+    "/lights/{lightId}/" : {
+      "get" : {
+        "tags" : [ "蓝牙灯" ],
+        "summary" : "蓝牙灯",
+        "responses" : {
+          "200" : {
+            "description" : "成功获取设备信息",
+            "schema" : {
+              "type" : "object",
+              "description" : "蓝牙灯基本信息",
+              "properties" : {
+                "time" : {
+                  "type" : "string",
+                  "description" : "更新时间"
+                },
+                "serial_no" : {
+                  "type" : "string",
+                  "description" : "设备的唯一编号"
+                },
+                "imei" : {
+                  "type" : "string",
+                  "description" : "设备NB模组号"
+                },
+                "hardware_version" : {
+                  "type" : "string",
+                  "description" : "硬件版本"
+                },
+                "boot_version" : {
+                  "type" : "string",
+                  "description" : "启动代码版本"
+                },
+                "software_version" : {
+                  "type" : "string",
+                  "description" : "软件版本"
+                },
+                "state" : {
+                  "type" : "string",
+                  "description" : "灯状态",
+                  "enum" : [ "自主控制 开关控制 远程控制" ]
+                },
+                "lightness" : {
+                  "type" : "number",
+                  "description" : "灯亮度 0 - 100",
+                  "minimum" : 0,
+                  "maximum" : 100
+                },
+                "illuminance" : {
+                  "type" : "number",
+                  "description" : "照度",
+                  "minimum" : 0
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        },
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "Authorization",
+          "in" : "header",
+          "required" : true,
+          "type" : "string",
+          "description" : "用户认证Token（例：JWT XXXXXXXXXXXXX）"
+        }, {
+          "name" : "lightId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string",
+          "description" : "设备的唯一编号（例：CL201903090001）"
+        } ]
+      }
+    },
+    "/lights/{lightId}/commands/" : {
+      "post" : {
+        "tags" : [ "控制命令" ],
+        "summary" : "下发的控制命令",
+        "responses" : {
+          "201" : {
+            "description" : "Created"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        },
+        "parameters" : [ {
+          "name" : "Authorization",
+          "in" : "header",
+          "required" : true,
+          "type" : "string",
+          "description" : "用户认证Token（例：JWT XXXXXXXXXXXXX）"
+        }, {
+          "name" : "lightId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string",
+          "description" : "设备的唯一编号（例：CL201903090001）"
+        }, {
+          "name" : "body",
+          "in" : "body",
+          "description" : "控制命令内容",
+          "required" : true,
+          "schema" : {
+            "type" : "object",
+            "description" : "控制命令",
+            "required" : [ "command" ],
+            "properties" : {
+              "command" : {
+                "type" : "string",
+                "description" : "命令 require 请求控制权 release 释放控制权",
+                "enum" : [ "require", "release" ]
+              },
+              "lightness" : {
+                "type" : "integer",
+                "description" : "亮度 0 - 100，当且仅当command为require的时候使用",
+                "minimum" : 0,
+                "maximum" : 100
+              }
+            }
+          }
+        } ]
+      },
+      "delete" : {
+        "summary" : "撤销未执行的命令",
+        "description" : "撤销尚未执行的命令",
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "parameters" : [ {
+          "name" : "Authorization",
+          "in" : "header",
+          "required" : true,
+          "type" : "string",
+          "description" : "用户认证Token（例：JWT XXXXXXXXXXXXX）"
+        }, {
+          "name" : "lightId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string",
+          "description" : "设备的唯一编号（例：CL201903090001）"
+        } ]
+      }
+    }
+  }
+}
