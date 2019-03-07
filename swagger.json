@@ -8,6 +8,54 @@
   "host" : "api.renjinggai.com",
   "basePath" : "/BlueToothLight/v1",
   "schemes" : [ "https", "http" ],
+  "definitions" : {
+    "Light" : {
+      "type" : "object",
+      "description" : "蓝牙灯基本信息",
+      "properties" : {
+        "time" : {
+          "type" : "string",
+          "description" : "更新时间"
+        },
+        "serial_no" : {
+          "type" : "string",
+          "description" : "设备的唯一编号"
+        },
+        "imei" : {
+          "type" : "string",
+          "description" : "设备NB模组号"
+        },
+        "hardware_version" : {
+          "type" : "string",
+          "description" : "硬件版本"
+        },
+        "boot_version" : {
+          "type" : "string",
+          "description" : "启动代码版本"
+        },
+        "software_version" : {
+          "type" : "string",
+          "description" : "软件版本"
+        },
+        "state" : {
+          "type" : "string",
+          "description" : "灯状态",
+          "enum" : [ "自主控制 开关控制 远程控制" ]
+        },
+        "lightness" : {
+          "type" : "number",
+          "description" : "灯亮度 0 - 100",
+          "minimum" : 0,
+          "maximum" : 100
+        },
+        "illuminance" : {
+          "type" : "number",
+          "description" : "照度",
+          "minimum" : 0
+        }
+      }
+    }
+  },
   "paths" : {
     "/auth/jwt-token-obtain/" : {
       "post" : {
@@ -134,50 +182,7 @@
           "200" : {
             "description" : "成功获取设备信息",
             "schema" : {
-              "type" : "object",
-              "description" : "蓝牙灯基本信息",
-              "properties" : {
-                "time" : {
-                  "type" : "string",
-                  "description" : "更新时间"
-                },
-                "serial_no" : {
-                  "type" : "string",
-                  "description" : "设备的唯一编号"
-                },
-                "imei" : {
-                  "type" : "string",
-                  "description" : "设备NB模组号"
-                },
-                "hardware_version" : {
-                  "type" : "string",
-                  "description" : "硬件版本"
-                },
-                "boot_version" : {
-                  "type" : "string",
-                  "description" : "启动代码版本"
-                },
-                "software_version" : {
-                  "type" : "string",
-                  "description" : "软件版本"
-                },
-                "state" : {
-                  "type" : "string",
-                  "description" : "灯状态",
-                  "enum" : [ "自主控制 开关控制 远程控制" ]
-                },
-                "lightness" : {
-                  "type" : "number",
-                  "description" : "灯亮度 0 - 100",
-                  "minimum" : 0,
-                  "maximum" : 100
-                },
-                "illuminance" : {
-                  "type" : "number",
-                  "description" : "照度",
-                  "minimum" : 0
-                }
-              }
+              "$ref" : "#/definitions/Light"
             }
           },
           "401" : {
