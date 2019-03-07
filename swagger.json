@@ -260,7 +260,9 @@
             }
           }
         } ]
-      },
+      }
+    },
+    "/lights/{lightId}/commands/{commandId}/" : {
       "delete" : {
         "summary" : "撤销未执行的命令",
         "description" : "撤销尚未执行的命令",
@@ -281,6 +283,12 @@
           "required" : true,
           "type" : "string",
           "description" : "设备的唯一编号（例：CL201903090001）"
+        }, {
+          "name" : "commandId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string",
+          "description" : "命令的唯一编号"
         } ]
       }
     }
