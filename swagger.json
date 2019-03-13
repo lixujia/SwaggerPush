@@ -9,6 +9,24 @@
   "basePath" : "/BlueToothLight/v1",
   "schemes" : [ "https", "http" ],
   "definitions" : {
+    "Paginator" : {
+      "type" : "object",
+      "description" : "分页",
+      "properties" : {
+        "count" : {
+          "type" : "integer",
+          "description" : "对象总数"
+        },
+        "privous" : {
+          "type" : "string",
+          "description" : "上一页"
+        },
+        "next" : {
+          "type" : "string",
+          "description" : "下一页"
+        }
+      }
+    },
     "Coordinate" : {
       "type" : "object",
       "description" : "座标点",
@@ -54,6 +72,10 @@
         "street_number" : {
           "type" : "string",
           "description" : "门牌号"
+        },
+        "detail_address" : {
+          "type" : "string",
+          "description" : "详细地址"
         }
       }
     },
@@ -82,7 +104,15 @@
           "enum" : [ "line", "area" ]
         },
         "address" : {
-          "type" : "string"
+          "$ref" : "#/definitions/Address"
+        },
+        "introduction" : {
+          "type" : "string",
+          "description" : "站点简介"
+        },
+        "picture" : {
+          "type" : "string",
+          "description" : "站点图片URL"
         }
       }
     },
@@ -187,6 +217,37 @@
             }
           }
         } ]
+      }
+    },
+    "/sites/" : {
+      "get" : {
+        "tags" : [ "站点" ],
+        "summary" : "获取站点列表",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "object",
+              "properties" : {
+                "count" : {
+                  "type" : "integer"
+                },
+                "next" : {
+                  "type" : "string"
+                },
+                "previous" : {
+                  "type" : "string"
+                },
+                "results" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/Site"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/lights/" : {
