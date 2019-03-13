@@ -246,6 +246,12 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
           }
         }
       }
