@@ -41,6 +41,11 @@
           "items" : {
             "$ref" : "#/definitions/Coordinate"
           }
+        },
+        "draw_type" : {
+          "type" : "string",
+          "description" : "地图显示类型",
+          "enum" : [ "line", "area" ]
         }
       }
     },
