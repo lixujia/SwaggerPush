@@ -354,6 +354,50 @@
         } ]
       }
     },
+    "/infrastructures/" : {
+      "get" : {
+        "tags" : [ "设施" ],
+        "summary" : "获取设施列表",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "object",
+              "properties" : {
+                "count" : {
+                  "type" : "integer"
+                },
+                "next" : {
+                  "type" : "string"
+                },
+                "previous" : {
+                  "type" : "string"
+                },
+                "results" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/Infrastructure"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "Authorization",
+          "in" : "header",
+          "required" : true,
+          "type" : "string"
+        } ]
+      }
+    },
     "/lights/" : {
       "get" : {
         "tags" : [ "蓝牙灯" ],
