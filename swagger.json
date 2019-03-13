@@ -9,24 +9,6 @@
   "basePath" : "/BlueToothLight/v1",
   "schemes" : [ "https", "http" ],
   "definitions" : {
-    "Paginator" : {
-      "type" : "object",
-      "description" : "分页",
-      "properties" : {
-        "count" : {
-          "type" : "integer",
-          "description" : "对象总数"
-        },
-        "privous" : {
-          "type" : "string",
-          "description" : "上一页"
-        },
-        "next" : {
-          "type" : "string",
-          "description" : "下一页"
-        }
-      }
-    },
     "Coordinate" : {
       "type" : "object",
       "description" : "座标点",
