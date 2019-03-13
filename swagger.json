@@ -261,6 +261,29 @@
           "required" : true,
           "type" : "string"
         } ]
+      },
+      "post" : {
+        "tags" : [ "站点" ],
+        "summary" : "新增站点",
+        "responses" : {
+          "201" : {
+            "description" : "Created"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "produces" : [ "application/json" ],
+        "consumes" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "Authorization",
+          "in" : "header",
+          "required" : true,
+          "type" : "string"
+        } ]
       }
     },
     "/lights/" : {
