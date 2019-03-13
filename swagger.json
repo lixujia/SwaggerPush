@@ -120,6 +120,7 @@
     "Infrastructure" : {
       "type" : "object",
       "description" : "设施信息",
+      "required" : [ "name", "coordinate", "address" ],
       "properties" : {
         "id" : {
           "type" : "string",
