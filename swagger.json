@@ -253,7 +253,14 @@
           "403" : {
             "description" : "Permission Denied"
           }
-        }
+        },
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "Authorization",
+          "in" : "header",
+          "required" : true,
+          "type" : "string"
+        } ]
       }
     },
     "/lights/" : {
