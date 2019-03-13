@@ -30,6 +30,7 @@
     "Coordinate" : {
       "type" : "object",
       "description" : "座标点",
+      "required" : [ "longitude", "latitude" ],
       "properties" : {
         "longitude" : {
           "type" : "number",
