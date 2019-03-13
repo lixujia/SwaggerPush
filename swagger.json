@@ -9,6 +9,41 @@
   "basePath" : "/BlueToothLight/v1",
   "schemes" : [ "https", "http" ],
   "definitions" : {
+    "Coordinate" : {
+      "type" : "object",
+      "description" : "座标点",
+      "properties" : {
+        "longitude" : {
+          "type" : "number",
+          "description" : "经度"
+        },
+        "latitude" : {
+          "type" : "number",
+          "description" : "纬度"
+        }
+      }
+    },
+    "Site" : {
+      "type" : "object",
+      "description" : "站点信息",
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "description" : "站点ID"
+        },
+        "name" : {
+          "type" : "string",
+          "description" : "站点名称"
+        },
+        "coordinate_list" : {
+          "type" : "array",
+          "description" : "外围座标列表",
+          "items" : {
+            "$ref" : "#/definitions/Coordinate"
+          }
+        }
+      }
+    },
     "Light" : {
       "type" : "object",
       "description" : "蓝牙灯基本信息",
