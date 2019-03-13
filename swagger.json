@@ -117,6 +117,34 @@
         }
       }
     },
+    "Infrastructure" : {
+      "type" : "object",
+      "description" : "设施信息",
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "description" : "设施ID"
+        },
+        "name" : {
+          "type" : "string",
+          "description" : "设施名称"
+        },
+        "coordinate" : {
+          "$ref" : "#/definitions/Coordinate"
+        },
+        "picture" : {
+          "type" : "string",
+          "description" : "设施图片URL"
+        },
+        "address" : {
+          "$ref" : "#/definitions/Address"
+        },
+        "introduction" : {
+          "type" : "string",
+          "description" : "设施简介"
+        }
+      }
+    },
     "Light" : {
       "type" : "object",
       "description" : "蓝牙灯基本信息",
