@@ -44,6 +44,7 @@
     "Address" : {
       "type" : "object",
       "description" : "地址信息",
+      "required" : [ "detail_address" ],
       "properties" : {
         "country" : {
           "type" : "string",
@@ -290,7 +291,7 @@
           "required" : true,
           "schema" : {
             "type" : "object",
-            "required" : [ "name", "coordinate_list", "draw_type" ],
+            "required" : [ "name", "coordinate_list", "draw_type", "address" ],
             "properties" : {
               "name" : {
                 "type" : "string",
@@ -307,6 +308,17 @@
                 "type" : "string",
                 "description" : "地图显示类型",
                 "enum" : [ "line", "area" ]
+              },
+              "introduction" : {
+                "type" : "string",
+                "description" : "站点简介"
+              },
+              "picture" : {
+                "type" : "string",
+                "description" : "站点图片URL"
+              },
+              "address" : {
+                "$ref" : "#/definitions/Address"
               }
             }
           }
