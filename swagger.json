@@ -5,7 +5,6 @@
     "title" : "蓝牙灯Restful API文档",
     "description" : "蓝牙灯控制和展示API文档\n\nPOST /auth/jwt-token-obtain/ 可获取用户认证的JWT Token\nGET /lights/ 可以获取所有蓝牙灯的设备信息\nGET /lights/{lightId}/ 可以获取设备编号等于 lightId 的设备的信息\nPOST /lights/{lightId}/commands/ 为向设备编号为 lightId 的设备发送控制命令\n\n请求接口的参数，请注意它们有“header”、“path”、“query”和“body”等区分\n  - header 参数应放置在HTTP请求头中\n  - path 参数放在URL路径中\n  - query 参数放在URL查询参数中（?后面）\n  - body 为提交数据的数据体\n  \n业务第一步，应先从 /auth/jwt-token-obtain/ 接口获取用户的JWT Token。后续的每个请求\n都需要将 Authorization: JWT {jwtToken} 放置在HTTP头部。\n"
   },
-  "host" : "light.creallies.com:8000",
   "basePath" : "/",
   "schemes" : [ "https", "http" ],
   "definitions" : {
