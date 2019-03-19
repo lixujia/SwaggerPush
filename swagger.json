@@ -1,234 +1,143 @@
 {
-  "swagger" : "2.0",
+  "openapi" : "3.0.0",
   "info" : {
-    "version" : "v1",
-    "title" : "蓝牙灯Restful API文档",
-    "description" : "蓝牙灯控制和展示API文档\n\nPOST /auth/jwt-token-obtain/ 可获取用户认证的JWT Token\nGET /lights/ 可以获取所有蓝牙灯的设备信息\nGET /lights/{lightId}/ 可以获取设备编号等于 lightId 的设备的信息\nPOST /lights/{lightId}/commands/ 为向设备编号为 lightId 的设备发送控制命令\n\n请求接口的参数，请注意它们有“header”、“path”、“query”和“body”等区分\n  - header 参数应放置在HTTP请求头中\n  - path 参数放在URL路径中\n  - query 参数放在URL查询参数中（?后面）\n  - body 为提交数据的数据体\n  \n业务第一步，应先从 /auth/jwt-token-obtain/ 接口获取用户的JWT Token。后续的每个请求\n都需要将 Authorization: JWT {jwtToken} 放置在HTTP头部。\n"
+    "version" : "v1-oas3",
+    "title" : "视频监控管理API文档",
+    "description" : "## 术语\n  - 站点 地理上的一个区域，如学校、隧道、公路\n  - 设施 站点内的一个实体建筑，如配电室、井口、隧道的一段区间\n  - 设备 安装在站点内的实体设备，如主机、灯、风机、温度传感器\n  \n## HTTP方法\n  - OPTION 获取某URI支持的方法列表\n  - GET 用于获取资源的列表或单个资源信息\n  - POST 向某种资源列表创建一个新的资源\n  - PUT 整体更新一个资源的信息，数据体中不带的属性，将会被默认值替代\n  - PATCH 部分更新一个资源的信息，数据体中不带的属性，将保持不变\n  - DELETE 删除某个资源\n\n## 传参方式\n  - header 携带在HTTP请求头部\n  - path URL路径中的参数，如 /sites/{siteId}/ 中的siteId是path参数。\n  - query URL中?后的参数，如 /devices/?siteId={siteId}中大括号内的siteId\n  \n## URL风格\n  API的URL遵循 /{type}/{objectId}/?para1={para1}&para2={para2} 的风格。\n  其中，type是资源的类型。\n  \n  如果访问的URL为不带objectId，而仅仅是/{type}/，则访问的对象是类型为“type”的所有对象列表。\n  \n  而如果访问的是 /{type}/{objectId}/ 这样的URL，访问的对象是id和类型都匹配的一个具体的对象。\n  \n  ?后的查询参数主要是在进行列表访问的时候，对列表中的对象进行条件过滤。在Restful的风格中，\n  \n  查询参数不可以用于对资源进行修改。所有修改资源的动作必须通过POST、PUT、PATCH、DELETE方法来实现。\n  \n## 资源类型\n  - sites 站点\n  - infrastructures 设施\n  - devices 设备\n  - events 事件\n  - data 数据\n  - commands 命令\n  - history_commands 命令历史记录\n\n## 用户认证\n  本文档的API中，除了 /sms-code/ 和 /token-auth/ 两个用于用户认证的接口外，其余所有接口都需要\n  \n  携带用户认证的Token进行访问。Token携带方法，在HTTP请求头中带上 Authorization 属性设置为：\n   \n  Bearer {token}\n  \n  获取方法如下\n\n### 微信小程序用户认证\n  \n  首先，客户端通过 POST 手机号到 /sms-code/ 路径向后台申请一个短信验证码。\n  \n  如果一切正常，服务器会返回 200 OK，用户的手机能在几秒钟内收到平台发送的短信验证码。\n  \n  然后，客户端将用户的手机号、短信验证码以及用户的微信信息 POST 到 /wechat-bind/ 路径\n  \n  完成手机号和微信号的绑定。\n  \n  最后，客户端空过 POST 微信用户的微信信息到 /token-auth/ 换取Token。\n"
   },
-  "basePath" : "/",
-  "schemes" : [ "https", "http" ],
-  "definitions" : {
-    "Coordinate" : {
-      "type" : "object",
-      "description" : "座标点",
-      "required" : [ "longitude", "latitude" ],
-      "properties" : {
-        "longitude" : {
-          "type" : "number",
-          "description" : "经度"
-        },
-        "latitude" : {
-          "type" : "number",
-          "description" : "纬度"
-        }
-      }
-    },
-    "Address" : {
-      "type" : "object",
-      "description" : "地址信息",
-      "required" : [ "detail_address" ],
-      "properties" : {
-        "country" : {
-          "type" : "string",
-          "description" : "国"
-        },
-        "province" : {
-          "type" : "string",
-          "description" : "省"
-        },
-        "city" : {
-          "type" : "string",
-          "description" : "市"
-        },
-        "district" : {
-          "type" : "string",
-          "description" : "区"
-        },
-        "street" : {
-          "type" : "string",
-          "description" : "街道"
-        },
-        "city_code" : {
-          "type" : "integer",
-          "description" : "城市编码"
-        },
-        "street_number" : {
-          "type" : "string",
-          "description" : "门牌号"
-        },
-        "detail_address" : {
-          "type" : "string",
-          "description" : "详细地址"
-        }
-      }
-    },
-    "Site" : {
-      "type" : "object",
-      "description" : "站点信息",
-      "properties" : {
-        "id" : {
-          "type" : "string",
-          "description" : "站点ID"
-        },
-        "name" : {
-          "type" : "string",
-          "description" : "站点名称"
-        },
-        "coordinate_list" : {
-          "type" : "array",
-          "description" : "外围座标列表",
-          "items" : {
-            "$ref" : "#/definitions/Coordinate"
-          }
-        },
-        "draw_type" : {
-          "type" : "string",
-          "description" : "地图显示类型",
-          "enum" : [ "line", "area" ]
-        },
-        "address" : {
-          "$ref" : "#/definitions/Address"
-        },
-        "introduction" : {
-          "type" : "string",
-          "description" : "站点简介"
-        },
-        "picture" : {
-          "type" : "string",
-          "description" : "站点图片URL"
-        }
-      }
-    },
-    "Infrastructure" : {
-      "type" : "object",
-      "description" : "设施信息",
-      "required" : [ "name", "coordinate", "address" ],
-      "properties" : {
-        "id" : {
-          "type" : "string",
-          "description" : "设施ID"
-        },
-        "name" : {
-          "type" : "string",
-          "description" : "设施名称"
-        },
-        "coordinate" : {
-          "$ref" : "#/definitions/Coordinate"
-        },
-        "picture" : {
-          "type" : "string",
-          "description" : "设施图片URL"
-        },
-        "address" : {
-          "$ref" : "#/definitions/Address"
-        },
-        "introduction" : {
-          "type" : "string",
-          "description" : "设施简介"
-        }
-      }
-    },
-    "Light" : {
-      "type" : "object",
-      "description" : "蓝牙灯基本信息",
-      "properties" : {
-        "time" : {
-          "type" : "string",
-          "description" : "更新时间"
-        },
-        "serial_no" : {
-          "type" : "string",
-          "description" : "设备的唯一编号"
-        },
-        "imei" : {
-          "type" : "string",
-          "description" : "设备NB模组号"
-        },
-        "hardware_version" : {
-          "type" : "string",
-          "description" : "硬件版本"
-        },
-        "boot_version" : {
-          "type" : "string",
-          "description" : "启动代码版本"
-        },
-        "software_version" : {
-          "type" : "string",
-          "description" : "软件版本"
-        },
-        "state" : {
-          "type" : "string",
-          "description" : "灯状态",
-          "enum" : [ "自主控制 开关控制 远程控制" ]
-        },
-        "lightness" : {
-          "type" : "number",
-          "description" : "灯亮度 0 - 100",
-          "minimum" : 0,
-          "maximum" : 100
-        },
-        "illuminance" : {
-          "type" : "number",
-          "description" : "照度",
-          "minimum" : 0
-        }
-      }
-    }
-  },
+  "servers" : [ {
+    "url" : "https://api.renjinggai.com:11443",
+    "description" : "视频监控API服务"
+  } ],
+  "security" : [ {
+    "bearerAuth" : [ ]
+  } ],
   "paths" : {
-    "/auth/jwt-token-obtain/" : {
+    "/sms-code/" : {
       "post" : {
         "tags" : [ "用户认证" ],
-        "summary" : "获取授权token",
+        "summary" : "获取短信验证码",
         "responses" : {
           "200" : {
             "description" : "OK",
-            "schema" : {
-              "type" : "object",
-              "properties" : {
-                "token" : {
-                  "type" : "string",
-                  "description" : "用户认证的JWT Token"
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "wait_time" : {
+                      "type" : "integer",
+                      "description" : "下次获取的等待时间"
+                    }
+                  }
                 }
               }
             }
           },
-          "400" : {
-            "description" : "Bad Request",
-            "schema" : {
-              "type" : "object",
-              "properties" : {
-                "non_field_errors" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string",
-                    "enum" : [ "无法使用提供的认证信息登录。" ]
+          "429" : {
+            "description" : "Too Many Requests",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "wait_time" : {
+                      "type" : "integer",
+                      "description" : "下次获取的等待时间"
+                    }
                   }
                 }
               }
             }
           }
         },
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "body",
-          "in" : "body",
-          "required" : true,
-          "schema" : {
-            "type" : "object",
-            "required" : [ "username", "password" ],
-            "properties" : {
-              "username" : {
-                "type" : "string",
-                "description" : "用户名"
-              },
-              "password" : {
-                "type" : "string",
-                "description" : "密码"
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "required" : [ "mobile", "action" ],
+                "properties" : {
+                  "mobile" : {
+                    "type" : "string",
+                    "description" : "手机号码"
+                  },
+                  "action" : {
+                    "type" : "string",
+                    "description" : "验证码的用途",
+                    "enum" : [ "login", "bind", "password-reset" ]
+                  }
+                }
               }
             }
           }
-        } ]
+        }
+      }
+    },
+    "/wechat-bind/" : {
+      "post" : {
+        "tags" : [ "用户认证" ],
+        "summary" : "用户绑定微信号",
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          },
+          "401" : {
+            "description" : "Unauthenticated"
+          }
+        },
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/WechatBind"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/token-auth/" : {
+      "post" : {
+        "tags" : [ "用户认证" ],
+        "summary" : "获取Token",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "token" : {
+                      "type" : "string",
+                      "description" : "用户Token，在需要用户认证的接口访问中以 Bearer {token} 的方式带在Authorization头域中"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          }
+        },
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "required" : [ "wechat_info" ],
+                "properties" : {
+                  "wechat_info" : {
+                    "type" : "string",
+                    "description" : "微信信息"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/sites/" : {
@@ -238,22 +147,26 @@
         "responses" : {
           "200" : {
             "description" : "OK",
-            "schema" : {
-              "type" : "object",
-              "properties" : {
-                "count" : {
-                  "type" : "integer"
-                },
-                "next" : {
-                  "type" : "string"
-                },
-                "previous" : {
-                  "type" : "string"
-                },
-                "results" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/definitions/Site"
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "count" : {
+                      "type" : "integer"
+                    },
+                    "next" : {
+                      "type" : "string"
+                    },
+                    "previous" : {
+                      "type" : "string"
+                    },
+                    "results" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/Site"
+                      }
+                    }
                   }
                 }
               }
@@ -266,12 +179,31 @@
             "description" : "Permission Denied"
           }
         },
-        "produces" : [ "application/json" ],
         "parameters" : [ {
-          "name" : "Authorization",
-          "in" : "header",
-          "required" : true,
-          "type" : "string"
+          "name" : "nameContain",
+          "in" : "query",
+          "required" : false,
+          "description" : "站点名称包含的文本过滤",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "addressContain",
+          "in" : "query",
+          "required" : false,
+          "description" : "站点地址包含的文本过滤",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "inArea",
+          "in" : "query",
+          "required" : false,
+          "description" : "根据座标区域过滤 lngMin_latMin_lngMax_latMax",
+          "schema" : {
+            "type" : "string",
+            "pattern" : "([0-9]+\\.[0-9]+_){3}([0-9]+\\.[0-9]+)"
+          }
         } ]
       },
       "post" : {
@@ -288,50 +220,135 @@
             "description" : "Permission Denied"
           }
         },
-        "produces" : [ "application/json" ],
-        "consumes" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "Authorization",
-          "in" : "header",
-          "required" : true,
-          "type" : "string"
-        }, {
-          "name" : "body",
-          "in" : "body",
-          "description" : "站点信息",
-          "required" : true,
-          "schema" : {
-            "type" : "object",
-            "required" : [ "name", "coordinate_list", "draw_type", "address" ],
-            "properties" : {
-              "name" : {
-                "type" : "string",
-                "description" : "站点名称"
-              },
-              "coordinate_list" : {
-                "type" : "array",
-                "description" : "外围座标列表",
-                "items" : {
-                  "$ref" : "#/definitions/Coordinate"
-                }
-              },
-              "draw_type" : {
-                "type" : "string",
-                "description" : "地图显示类型",
-                "enum" : [ "line", "area" ]
-              },
-              "introduction" : {
-                "type" : "string",
-                "description" : "站点简介"
-              },
-              "picture" : {
-                "type" : "string",
-                "description" : "站点图片URL"
-              },
-              "address" : {
-                "$ref" : "#/definitions/Address"
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Site"
               }
             }
+          },
+          "description" : "站点信息",
+          "required" : true
+        }
+      }
+    },
+    "/sites/{siteId}/" : {
+      "get" : {
+        "tags" : [ "站点" ],
+        "summary" : "获取单个站点信息",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Site"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ {
+          "name" : "siteId",
+          "in" : "path",
+          "required" : true,
+          "description" : "站点的唯一ID",
+          "schema" : {
+            "type" : "string"
+          }
+        } ]
+      },
+      "put" : {
+        "tags" : [ "站点" ],
+        "summary" : "整体更新单个站点的信息",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Site"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ {
+          "name" : "siteId",
+          "in" : "path",
+          "required" : true,
+          "description" : "站点的唯一ID",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Site"
+              }
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "站点" ],
+        "summary" : "局部更新单个站点的信息",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Site"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ {
+          "name" : "siteId",
+          "in" : "path",
+          "required" : true,
+          "description" : "站点的唯一ID",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Site"
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "站点" ],
+        "summary" : "删除单个站点",
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "404" : {
+            "description" : "Not Found"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "parameters" : [ {
+          "name" : "siteId",
+          "in" : "path",
+          "required" : true,
+          "description" : "站点的唯一ID",
+          "schema" : {
+            "type" : "string"
           }
         } ]
       }
@@ -343,22 +360,26 @@
         "responses" : {
           "200" : {
             "description" : "OK",
-            "schema" : {
-              "type" : "object",
-              "properties" : {
-                "count" : {
-                  "type" : "integer"
-                },
-                "next" : {
-                  "type" : "string"
-                },
-                "previous" : {
-                  "type" : "string"
-                },
-                "results" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/definitions/Infrastructure"
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "count" : {
+                      "type" : "integer"
+                    },
+                    "next" : {
+                      "type" : "string"
+                    },
+                    "previous" : {
+                      "type" : "string"
+                    },
+                    "results" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/Infrastructure"
+                      }
+                    }
                   }
                 }
               }
@@ -371,12 +392,30 @@
             "description" : "Permission Denied"
           }
         },
-        "produces" : [ "application/json" ],
         "parameters" : [ {
-          "name" : "Authorization",
-          "in" : "header",
-          "required" : true,
-          "type" : "string"
+          "name" : "siteId",
+          "in" : "query",
+          "description" : "根据站点ID过滤",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "nameContain",
+          "in" : "query",
+          "description" : "根据设施的名称过滤",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "addressContain",
+          "in" : "query",
+          "description" : "根据设施的地址过滤",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
         } ]
       },
       "post" : {
@@ -387,52 +426,200 @@
             "description" : "Created"
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
             "description" : "Permission Denied"
           }
         },
-        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Infrastructure"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructures/{infrastructureId}/" : {
+      "get" : {
+        "tags" : [ "设施" ],
+        "summary" : "获取单个设施信息",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Infrastructure"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        },
         "parameters" : [ {
-          "name" : "Authorization",
-          "in" : "header",
+          "name" : "infrastructureId",
+          "in" : "path",
           "required" : true,
-          "type" : "string"
-        }, {
-          "name" : "body",
-          "in" : "body",
-          "description" : "蓝牙灯必要信息",
-          "required" : true,
+          "description" : "设施的唯一ID",
           "schema" : {
-            "$ref" : "#/definitions/Infrastructure"
+            "type" : "string"
+          }
+        } ]
+      },
+      "put" : {
+        "tags" : [ "设施" ],
+        "summary" : "整体修改单个设施的信息",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Infrastructure"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        },
+        "parameters" : [ {
+          "name" : "infrastructureId",
+          "in" : "path",
+          "required" : true,
+          "description" : "设施的唯一ID",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Infrastructure"
+              }
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "设施" ],
+        "summary" : "部分修改单个设施的信息",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Infrastructure"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        },
+        "parameters" : [ {
+          "name" : "infrastructureId",
+          "in" : "path",
+          "required" : true,
+          "description" : "设施的唯一ID",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Infrastructure"
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "设施" ],
+        "summary" : "删除单个设施",
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        },
+        "parameters" : [ {
+          "name" : "infrastructureId",
+          "in" : "path",
+          "required" : true,
+          "description" : "设施的唯一ID",
+          "schema" : {
+            "type" : "string"
           }
         } ]
       }
     },
-    "/lights/" : {
+    "/devices/" : {
       "get" : {
-        "tags" : [ "蓝牙灯" ],
-        "summary" : "获取列表",
+        "tags" : [ "设备" ],
+        "summary" : "获取设备列表",
         "responses" : {
           "200" : {
             "description" : "OK",
-            "schema" : {
-              "type" : "object",
-              "properties" : {
-                "count" : {
-                  "type" : "integer"
-                },
-                "next" : {
-                  "type" : "string"
-                },
-                "previous" : {
-                  "type" : "string"
-                },
-                "results" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/definitions/Light"
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "count" : {
+                      "type" : "integer"
+                    },
+                    "next" : {
+                      "type" : "string"
+                    },
+                    "previous" : {
+                      "type" : "string"
+                    },
+                    "results" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/Device"
+                      }
+                    }
                   }
                 }
               }
@@ -445,16 +632,26 @@
             "description" : "Permission Denied"
           }
         },
-        "produces" : [ "application/json" ],
         "parameters" : [ {
-          "name" : "Authorization",
-          "in" : "header",
-          "required" : true,
-          "type" : "string"
+          "name" : "siteId",
+          "in" : "query",
+          "required" : false,
+          "description" : "根据站点ID过滤",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "infrastructureId",
+          "in" : "query",
+          "required" : false,
+          "description" : "根据设施ID过滤",
+          "schema" : {
+            "type" : "string"
+          }
         } ]
       },
       "post" : {
-        "tags" : [ "蓝牙灯" ],
+        "tags" : [ "设备" ],
         "summary" : "创建设备对象",
         "responses" : {
           "201" : {
@@ -467,43 +664,33 @@
             "description" : "Permission Denied"
           }
         },
-        "produces" : [ "application/json" ],
-        "parameters" : [ {
-          "name" : "Authorization",
-          "in" : "header",
-          "required" : true,
-          "type" : "string"
-        }, {
-          "name" : "body",
-          "in" : "body",
-          "description" : "蓝牙灯必要信息",
-          "required" : true,
-          "schema" : {
-            "type" : "object",
-            "required" : [ "serial_no", "imei" ],
-            "properties" : {
-              "serial_no" : {
-                "type" : "string",
-                "description" : "设备的唯一编号"
-              },
-              "imei" : {
-                "type" : "string",
-                "description" : "设备NB模组号"
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Device"
               }
             }
-          }
-        } ]
+          },
+          "description" : "蓝牙灯必要信息",
+          "required" : true
+        }
       }
     },
-    "/lights/{lightId}/" : {
+    "/devices/{deviceId}/" : {
       "get" : {
-        "tags" : [ "蓝牙灯" ],
-        "summary" : "蓝牙灯",
+        "tags" : [ "设备" ],
+        "summary" : "获取单个设备信息",
         "responses" : {
           "200" : {
-            "description" : "成功获取设备信息",
-            "schema" : {
-              "$ref" : "#/definitions/Light"
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Device"
+                }
+              }
             }
           },
           "401" : {
@@ -516,107 +703,986 @@
             "description" : "Not Found"
           }
         },
-        "produces" : [ "application/json" ],
         "parameters" : [ {
-          "name" : "Authorization",
-          "in" : "header",
-          "required" : true,
-          "type" : "string",
-          "description" : "用户认证Token（例：JWT XXXXXXXXXXXXX）"
-        }, {
-          "name" : "lightId",
+          "name" : "deviceId",
           "in" : "path",
           "required" : true,
-          "type" : "string",
-          "description" : "设备的唯一编号（例：CL201903090001）"
-        } ]
-      }
-    },
-    "/lights/{lightId}/commands/" : {
-      "post" : {
-        "tags" : [ "蓝牙灯" ],
-        "summary" : "下发的控制命令",
-        "responses" : {
-          "201" : {
-            "description" : "Created"
-          },
-          "401" : {
-            "description" : "Not Authorized"
-          },
-          "403" : {
-            "description" : "Permission Denied"
-          },
-          "404" : {
-            "description" : "Not Found"
-          }
-        },
-        "parameters" : [ {
-          "name" : "Authorization",
-          "in" : "header",
-          "required" : true,
-          "type" : "string",
-          "description" : "用户认证Token（例：JWT XXXXXXXXXXXXX）"
-        }, {
-          "name" : "lightId",
-          "in" : "path",
-          "required" : true,
-          "type" : "string",
-          "description" : "设备的唯一编号（例：CL201903090001）"
-        }, {
-          "name" : "body",
-          "in" : "body",
-          "description" : "控制命令内容",
-          "required" : true,
+          "description" : "设备的唯一编号（例：CL201903090001）",
           "schema" : {
-            "type" : "object",
-            "description" : "控制命令",
-            "required" : [ "command" ],
-            "properties" : {
-              "command" : {
-                "type" : "string",
-                "description" : "命令 require 请求控制权 release 释放控制权",
-                "enum" : [ "require", "release" ]
-              },
-              "lightness" : {
-                "type" : "integer",
-                "description" : "亮度 0 - 100，当且仅当command为require的时候使用",
-                "minimum" : 0,
-                "maximum" : 100
+            "type" : "string"
+          }
+        } ]
+      },
+      "put" : {
+        "tags" : [ "设备" ],
+        "summary" : "整体更新单个设备的信息",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Device"
+                }
               }
             }
           }
-        } ]
-      }
-    },
-    "/lights/{lightId}/commands/{commandId}/" : {
+        },
+        "parameters" : [ {
+          "name" : "deviceId",
+          "in" : "path",
+          "required" : true,
+          "description" : "设备的唯一编号（例：CL201903090001）",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Device"
+              }
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "设备" ],
+        "summary" : "局部更新单个设备的信息",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Device"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ {
+          "name" : "deviceId",
+          "in" : "path",
+          "required" : true,
+          "description" : "设备的唯一编号（例：CL201903090001）",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Device"
+              }
+            }
+          }
+        }
+      },
       "delete" : {
-        "tags" : [ "蓝牙灯" ],
-        "summary" : "撤销未执行的命令",
-        "description" : "撤销尚未执行的命令",
+        "tags" : [ "设备" ],
+        "summary" : "删除单个设备",
         "responses" : {
           "204" : {
             "description" : "No Content"
           }
         },
         "parameters" : [ {
-          "name" : "Authorization",
-          "in" : "header",
-          "required" : true,
-          "type" : "string",
-          "description" : "用户认证Token（例：JWT XXXXXXXXXXXXX）"
-        }, {
-          "name" : "lightId",
+          "name" : "deviceId",
           "in" : "path",
           "required" : true,
-          "type" : "string",
-          "description" : "设备的唯一编号（例：CL201903090001）"
+          "description" : "设备的唯一编号（例：CL201903090001）",
+          "schema" : {
+            "type" : "string"
+          }
+        } ]
+      }
+    },
+    "/cameras/" : {
+      "get" : {
+        "tags" : [ "视频设备" ],
+        "summary" : "获取视频设备列表",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "count" : {
+                      "type" : "integer"
+                    },
+                    "next" : {
+                      "type" : "string"
+                    },
+                    "previous" : {
+                      "type" : "string"
+                    },
+                    "results" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/Camera"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "视频设备" ],
+        "summary" : "添加视频设备",
+        "responses" : {
+          "201" : {
+            "description" : "Created"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Camera"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras/{cameraId}/" : {
+      "get" : {
+        "tags" : [ "视频设备" ],
+        "summary" : "获取单个视频设备信息",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Camera"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "parameters" : [ {
+          "name" : "cameraId",
+          "in" : "path",
+          "required" : true,
+          "description" : "视频设备唯一ID",
+          "schema" : {
+            "type" : "string"
+          }
+        } ]
+      },
+      "put" : {
+        "tags" : [ "视频设备" ],
+        "summary" : "整体更新单个设备信息",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Camera"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "parameters" : [ {
+          "name" : "cameraId",
+          "in" : "path",
+          "required" : true,
+          "description" : "视频设备唯一ID",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Camera"
+              }
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "视频设备" ],
+        "summary" : "局部更新单个设备信息",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Camera"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "parameters" : [ {
+          "name" : "cameraId",
+          "in" : "path",
+          "required" : true,
+          "description" : "视频设备唯一ID",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Camera"
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "视频设备" ],
+        "summary" : "删除单个视频设备",
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        },
+        "parameters" : [ {
+          "name" : "cameraId",
+          "in" : "path",
+          "required" : true,
+          "description" : "视频设备唯一ID",
+          "schema" : {
+            "type" : "string"
+          }
+        } ]
+      }
+    },
+    "/events/" : {
+      "get" : {
+        "tags" : [ "事件" ],
+        "summary" : "获取事件列表",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "count" : {
+                      "type" : "integer"
+                    },
+                    "next" : {
+                      "type" : "string"
+                    },
+                    "previous" : {
+                      "type" : "string"
+                    },
+                    "results" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/Event"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "query",
+          "required" : false,
+          "description" : "通过相关用户过滤事件",
+          "schema" : {
+            "type" : "string"
+          }
         }, {
+          "name" : "siteId",
+          "in" : "query",
+          "required" : false,
+          "description" : "通过站点ID过滤事件",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "infrastructureId",
+          "in" : "query",
+          "required" : false,
+          "description" : "通过设施ID过滤事件",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "deviceId",
+          "in" : "query",
+          "required" : false,
+          "description" : "通过设备ID过滤事件",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "event",
+          "in" : "query",
+          "required" : false,
+          "description" : "通过事件类型过滤事件",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "minTime",
+          "in" : "query",
+          "required" : false,
+          "description" : "通过最小时间过滤事件",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "maxTime",
+          "in" : "query",
+          "required" : false,
+          "description" : "通过最大时间过滤事件",
+          "schema" : {
+            "type" : "string"
+          }
+        } ]
+      }
+    },
+    "/data/" : {
+      "get" : {
+        "tags" : [ "数据" ],
+        "summary" : "获取数据列表",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "count" : {
+                      "type" : "integer"
+                    },
+                    "next" : {
+                      "type" : "string"
+                    },
+                    "previous" : {
+                      "type" : "string"
+                    },
+                    "results" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/Data"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "parameters" : [ {
+          "name" : "deviceId",
+          "in" : "query",
+          "required" : false,
+          "description" : "通过设备ID过滤数据",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "infrastructureId",
+          "in" : "query",
+          "required" : false,
+          "description" : "通过设施ID过滤数据",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "siteId",
+          "in" : "query",
+          "required" : false,
+          "description" : "通过站点ID过滤数据",
+          "schema" : {
+            "type" : "string"
+          }
+        } ]
+      }
+    },
+    "/commands/" : {
+      "post" : {
+        "tags" : [ "命令" ],
+        "summary" : "下发设备控制命令",
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Command"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Command"
+              }
+            }
+          },
+          "description" : "控制命令内容",
+          "required" : true
+        }
+      }
+    },
+    "/commands/{commandId}/" : {
+      "delete" : {
+        "tags" : [ "命令" ],
+        "summary" : "撤销未完成命令",
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "401" : {
+            "description" : "Noauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "parameters" : [ {
           "name" : "commandId",
           "in" : "path",
           "required" : true,
-          "type" : "string",
-          "description" : "命令的唯一编号"
+          "description" : "命令唯一ID",
+          "schema" : {
+            "type" : "string"
+          }
         } ]
+      }
+    },
+    "/history_commands/" : {
+      "get" : {
+        "tags" : [ "历史命令" ],
+        "summary" : "获取历史命令列表",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CommandHistory"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Notauthorized"
+          },
+          "403" : {
+            "description" : "Permission Denied"
+          }
+        },
+        "parameters" : [ {
+          "name" : "deviceId",
+          "in" : "query",
+          "required" : false,
+          "description" : "根据设备ID过滤历史命令",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "command",
+          "in" : "query",
+          "required" : false,
+          "description" : "根据命令类型过滤历史命令",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "minCreateTime",
+          "in" : "query",
+          "required" : false,
+          "description" : "根据最小创建时间过滤",
+          "schema" : {
+            "$ref" : "#/components/schemas/Time"
+          }
+        }, {
+          "name" : "maxCreateTime",
+          "in" : "query",
+          "required" : false,
+          "description" : "根据最大创建时间过滤",
+          "schema" : {
+            "$ref" : "#/components/schemas/Time"
+          }
+        }, {
+          "name" : "minExecuteTime",
+          "in" : "query",
+          "required" : false,
+          "description" : "根据最小执行时间过滤",
+          "schema" : {
+            "$ref" : "#/components/schemas/Time"
+          }
+        }, {
+          "name" : "maxExecuteTime",
+          "in" : "query",
+          "required" : false,
+          "description" : "根据最大执行时间过滤",
+          "schema" : {
+            "$ref" : "#/components/schemas/Time"
+          }
+        }, {
+          "name" : "state",
+          "in" : "query",
+          "required" : false,
+          "description" : "根据事件状态过滤",
+          "schema" : {
+            "type" : "string"
+          }
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      }
+    },
+    "schemas" : {
+      "Time" : {
+        "type" : "string",
+        "description" : "带时区的ISO时间格式",
+        "pattern" : "2[0-9]{3}-(0[1-9]|1[012])-([012][0-9]|30|31)T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]+[0-9]{4}"
+      },
+      "Coordinate" : {
+        "type" : "object",
+        "description" : "座标点",
+        "required" : [ "longitude", "latitude" ],
+        "properties" : {
+          "longitude" : {
+            "type" : "number",
+            "description" : "经度"
+          },
+          "latitude" : {
+            "type" : "number",
+            "description" : "纬度"
+          }
+        }
+      },
+      "WechatBind" : {
+        "type" : "object",
+        "description" : "微信绑定信息",
+        "properties" : {
+          "mobile" : {
+            "type" : "string",
+            "pattern" : "\\+?(86)?1[0-9]{10}",
+            "description" : "手机号码"
+          },
+          "sms_code" : {
+            "type" : "string",
+            "pattern" : "[0-9]{6}",
+            "description" : "短信验证码"
+          },
+          "wechat_info" : {
+            "type" : "string",
+            "description" : "微信信息的base64文本"
+          }
+        }
+      },
+      "Site" : {
+        "type" : "object",
+        "description" : "站点信息",
+        "required" : [ "name", "coordinate_list", "draw_type", "address" ],
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "站点ID",
+            "readOnly" : true
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "站点名称"
+          },
+          "coordinate_list" : {
+            "type" : "array",
+            "description" : "外围座标列表",
+            "items" : {
+              "$ref" : "#/components/schemas/Coordinate"
+            }
+          },
+          "draw_type" : {
+            "type" : "string",
+            "description" : "地图显示类型",
+            "enum" : [ "line", "area" ]
+          },
+          "address" : {
+            "type" : "string",
+            "description" : "站点地址"
+          },
+          "introduction" : {
+            "type" : "string",
+            "description" : "站点简介"
+          },
+          "picture" : {
+            "type" : "string",
+            "description" : "站点图片URL"
+          }
+        }
+      },
+      "Infrastructure" : {
+        "type" : "object",
+        "description" : "设施信息",
+        "required" : [ "name", "coordinate", "address" ],
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "设施ID",
+            "readOnly" : true
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "设施名称"
+          },
+          "coordinate" : {
+            "$ref" : "#/components/schemas/Coordinate"
+          },
+          "site_id" : {
+            "type" : "string",
+            "description" : "设施所属的站点ID"
+          },
+          "picture" : {
+            "type" : "string",
+            "description" : "设施图片URL"
+          },
+          "address" : {
+            "type" : "string",
+            "description" : "设施的详细地址"
+          },
+          "introduction" : {
+            "type" : "string",
+            "description" : "设施简介"
+          }
+        }
+      },
+      "Device" : {
+        "type" : "object",
+        "description" : "设备基本信息",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "设备的唯一编号",
+            "readOnly" : true
+          },
+          "site_id" : {
+            "type" : "string",
+            "description" : "站点ID"
+          },
+          "infrastructure_id" : {
+            "type" : "string",
+            "description" : "设施ID"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "设备名称"
+          },
+          "coordinate" : {
+            "$ref" : "#/components/schemas/Coordinate"
+          },
+          "picture" : {
+            "type" : "string",
+            "description" : "设备图片"
+          },
+          "product" : {
+            "type" : "string",
+            "description" : "产品（设备类型）"
+          },
+          "introduction" : {
+            "type" : "string",
+            "description" : "设备简介"
+          },
+          "imei" : {
+            "type" : "string",
+            "description" : "设备NB模组号"
+          },
+          "hardware_version" : {
+            "type" : "string",
+            "description" : "硬件版本",
+            "readOnly" : true
+          },
+          "boot_version" : {
+            "type" : "string",
+            "description" : "启动代码版本",
+            "readOnly" : true
+          },
+          "software_version" : {
+            "type" : "string",
+            "description" : "软件版本",
+            "readOnly" : true
+          },
+          "control_state" : {
+            "type" : "string",
+            "description" : "控制状态",
+            "readOnly" : true,
+            "enum" : [ "自主控制 开关控制 远程控制" ]
+          }
+        }
+      },
+      "CameraChannel" : {
+        "type" : "object",
+        "description" : "视频通道",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "通道名称"
+          },
+          "number" : {
+            "type" : "integer",
+            "description" : "通道号"
+          }
+        }
+      },
+      "Camera" : {
+        "type" : "object",
+        "description" : "视频设备",
+        "properties" : {
+          "basic_info" : {
+            "$ref" : "#/components/schemas/Device"
+          },
+          "ip_address" : {
+            "type" : "string",
+            "description" : "视频设备的IP地址"
+          },
+          "user" : {
+            "type" : "string",
+            "description" : "登录视频设备的用户"
+          },
+          "password" : {
+            "type" : "string",
+            "description" : "视频设备登录密码"
+          },
+          "channel_list" : {
+            "type" : "array",
+            "description" : "通道列表",
+            "items" : {
+              "$ref" : "#/components/schemas/CameraChannel"
+            }
+          }
+        }
+      },
+      "Event" : {
+        "type" : "object",
+        "description" : "事件",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "事件的唯一ID",
+            "readOnly" : true
+          },
+          "time" : {
+            "type" : "string",
+            "description" : "事件时间",
+            "readOnly" : true
+          },
+          "coordinate" : {
+            "$ref" : "#/components/schemas/Coordinate"
+          },
+          "event" : {
+            "type" : "string",
+            "description" : "事件"
+          },
+          "user_id" : {
+            "type" : "string",
+            "description" : "事件相关的用户"
+          },
+          "site_id" : {
+            "type" : "string",
+            "description" : "事件相关的站点"
+          },
+          "infrastructure_id" : {
+            "type" : "string",
+            "description" : "事件相关的设施"
+          },
+          "device_id" : {
+            "type" : "string",
+            "description" : "事件相关的设备"
+          }
+        }
+      },
+      "Data" : {
+        "type" : "object",
+        "description" : "数据",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "数据的唯一ID",
+            "readOnly" : true
+          },
+          "time" : {
+            "type" : "string",
+            "description" : "数据时间",
+            "readOnly" : true
+          },
+          "device_id" : {
+            "type" : "string",
+            "description" : "数据对应设备的ID"
+          },
+          "content" : {
+            "type" : "object",
+            "description" : "数据内容，不同的设备类型数据内容可能不尽相同"
+          }
+        }
+      },
+      "Command" : {
+        "type" : "object",
+        "description" : "命令",
+        "required" : [ "device_id", "command" ],
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "命令的唯一ID",
+            "readOnly" : true
+          },
+          "device_id" : {
+            "type" : "string",
+            "description" : "命令关联的设备ID"
+          },
+          "command" : {
+            "type" : "string",
+            "description" : "命令码",
+            "enum" : [ "require", "release" ]
+          },
+          "para" : {
+            "type" : "object",
+            "description" : "附加参数",
+            "properties" : {
+              "brightness" : {
+                "type" : "integer",
+                "minimum" : 0,
+                "maximum" : 100
+              }
+            }
+          }
+        }
+      },
+      "CommandHistory" : {
+        "type" : "object",
+        "description" : "命令",
+        "required" : [ "device_id", "command" ],
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "命令的唯一ID",
+            "readOnly" : true
+          },
+          "device_id" : {
+            "type" : "string",
+            "description" : "命令关联的设备ID"
+          },
+          "command" : {
+            "type" : "string",
+            "description" : "命令码",
+            "enum" : [ "require", "release" ]
+          },
+          "create_time" : {
+            "type" : "string",
+            "description" : "创建时间",
+            "readOnly" : true
+          },
+          "execute_time" : {
+            "type" : "string",
+            "description" : "执行时间",
+            "readOnly" : true
+          },
+          "state" : {
+            "type" : "string",
+            "description" : "命令状态",
+            "readOnly" : true,
+            "enum" : [ "waiting", "delivered", "sent", "success", "fail", "canceled" ]
+          },
+          "para" : {
+            "type" : "object",
+            "description" : "附加参数",
+            "properties" : {
+              "brightness" : {
+                "type" : "integer",
+                "minimum" : 0,
+                "maximum" : 100
+              }
+            }
+          }
+        }
       }
     }
   }
