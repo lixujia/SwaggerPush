@@ -1620,17 +1620,21 @@
           },
           "command" : {
             "type" : "string",
-            "description" : "命令码",
-            "enum" : [ "require", "release" ]
+            "description" : "- start 开始云台控制（必需参数：channel、action）\n- stop 停止云台控制（必需参数：channel、action）\n- require 请求视频流（必需参数：channel）\n- release 释放视频流（必需参数：channel）\n",
+            "enum" : [ "start", "stop", "require", "release" ]
           },
           "para" : {
             "type" : "object",
             "description" : "附加参数",
             "properties" : {
-              "brightness" : {
+              "channel" : {
                 "type" : "integer",
-                "minimum" : 0,
-                "maximum" : 100
+                "description" : "通道号"
+              },
+              "action" : {
+                "type" : "string",
+                "description" : "动作",
+                "enum" : [ "pan_left", "pan_right", "tilt_up", "tilt_down", "zoom_in", "zoom_out" ]
               }
             }
           }
